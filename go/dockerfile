@@ -1,8 +1,21 @@
-FROM alpine
+FROM golang:1.22
 
-RUN addgroup -S mercari && adduser -S trainee -G mercari
-# RUN chown -R trainee:mercari /path/to/db
+# Set destination for COPY
+WORKDIR /app
 
-USER trainee
+# Download Go modules
+COPY go.mod go.sum ./
+RUN go mod download
 
-CMD ["go", "version"]
+# Copy the source code. Note the slash at the end, as explained in
+# https://docs.docker.com/engine/reference/builder/#copy
+COPY /app/main.go ./
+
+# Build
+# Specify an executable name for the output, e.g., "myapp"
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/mywebserver
+
+EXPOSE 9000
+
+# Run the specified executable
+CMD ["/app/mywebserver"]
