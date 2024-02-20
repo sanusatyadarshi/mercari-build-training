@@ -31,7 +31,7 @@ COPY /app/main.go ./
 # operating system.
 
 
-RUN CGO_ENABLED=0 GOOS=darwin go build -o /app/mywebserver
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/mywebserver
 
 
 # Expose the port the service listens on
@@ -46,3 +46,6 @@ CMD ["/app/mywebserver"]
 # docker build -t build2024/app:latest .
 # docker run -p 9000:9000 build2024/app:latest
 # Refer: https://docs.docker.com/language/golang/build-images/
+
+# Error: ERROR [3/6] COPY go.mod go.sum ./
+# Fix: go mod tidy
