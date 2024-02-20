@@ -19,3 +19,10 @@ EXPOSE 9000
 
 # Run the specified executable
 CMD ["/app/mywebserver"]
+
+
+# How to run:
+# cd mercari/mercari-build-training/go
+# docker build -t build2024/app:latest .
+# docker run -p 9000:9000 build2024/app:latest
+# Refer: https://docs.docker.com/language/golang/build-images/
