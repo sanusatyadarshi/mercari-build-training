@@ -1,8 +1,51 @@
-FROM alpine
+FROM golang:1.22
 
-RUN addgroup -S mercari && adduser -S trainee -G mercari
-# RUN chown -R trainee:mercari /path/to/db
+# Set destination for COPY
+WORKDIR /app
 
-USER trainee
+# Download Go modules
+COPY go.mod go.sum ./
+RUN go mod download
 
-CMD ["go", "version"]
+# Copy the source code. Note the slash at the end, as explained in
+# https://docs.docker.com/engine/reference/builder/#copy
+COPY /app/main.go ./
+
+# Build
+# Specify an executable name for the output, e.g., "mywebserver"
+
+# CGO_ENABLED=0: This part of the command disables CGO. CGO is a tool within the Go ecosystem that allows
+# Go packages to call C code. By setting CGO_ENABLED=0, you are instructing the Go compiler not to link
+# any C code into the final binary. This is often done to ensure that the resulting binary is fully static,
+# meaning it does not depend on any shared libraries at runtime. Static binaries are easier to distribute
+# and deploy, especially in minimal environments like Docker containers, because you don't need to worry
+# about matching the environment's library versions.
+
+
+# GOOS=linux: This part sets the target operating system for the build to Linux. The GOOS environment variable
+# specifies the target OS for which the Go code will be compiled. Go supports cross-compilation, which means
+# you can compile binaries for a different platform than the one you are currently using. For instance, if you
+# are developing on a Mac (GOOS=darwin) or Windows (GOOS=windows), setting GOOS=linux allows you to compile
+# a binary that can be executed on a Linux system. This is particularly useful for creating Docker images
+# that are typically based on Linux, ensuring that your binary is compatible with the Docker container's
+# operating system.
+
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/mywebserver
+
+
+# Expose the port the service listens on
+EXPOSE 9000
+
+# Run the specified executable
+CMD ["/app/mywebserver"]
+
+
+# How to run:
+# cd mercari-build-training/go
+# docker build -t build2024/app:latest .
+# docker run -p 9000:9000 build2024/app:latest
+# Refer: https://docs.docker.com/language/golang/build-images/
+
+# Error: ERROR [3/6] COPY go.mod go.sum ./
+# Fix: go mod tidy
